@@ -1,0 +1,79 @@
+global:
+  timezone: Asia/Kolkata
+  checkers_path: /checkers/
+  default_score: 500
+  env_path: /checkers/bin/
+  flag_lifetime: 5
+  game_hardness: 2000.0
+  inflation: true
+  round_time: 120
+  start_time: 2020-04-25 21:00:00
+  game_mode: classic
+
+flower:
+  username: gameserver
+  password: MySuperS3cretFl0werP@ssword
+
+storages:
+  db:
+    dbname: gameserver
+    host: postgres
+    password: MySuperSecretP0stgresDB
+    port: 5432
+    user: gameserver
+
+  redis:
+    db: 0
+    host: redis
+    port: 6379
+    password: EpicRedisSecretPass
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    vhost: forcad
+    user: gameserver
+    password: EpicGameRabbitMQP@Ss
+  
+tasks:
+  - checker: adminpass/checker.py
+    checker_timeout: 10
+    checker_type: hackerdom
+    gets: 1
+    name: adminpass
+    places: 1
+    puts: 1
+
+  - checker: userpass/gevent_checker.py
+    checker_timeout: 10
+    checker_type: hackerdom
+    gets: 1
+    name: userpass
+    places: 1
+    puts: 1
+
+  - checker: dbaccess/gevent_checker.py
+    checker_timeout: 10
+    checker_type: hackerdom
+    gets: 1
+    name: dbaccess
+    places: 1
+    puts: 1
+  
+  - checker: etcshadow/gevent_checker.py
+    checker_timeout: 10
+    checker_type: hackerdom
+    gets: 1
+    name: etcshadow
+    places: 1
+    puts: 1
+  
+teams:
+  - ip: 172.19.10.3
+    name: "Test_Team_1"
+
+  - ip: 172.19.10.4
+    name: "Test_Team_2"
+
+  - ip: 172.19.10.5
+    name: "Test_Team_3"
