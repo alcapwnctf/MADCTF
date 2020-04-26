@@ -24,6 +24,7 @@ ADD ./checkers/requirements.txt /checker_requirements.txt
 RUN pip install -r /checker_requirements.txt
 
 ADD ./checkers /checkers
+RUN chmod -R o+rx /checkers
 
 ########## END CUSTOMIZE ##########
 

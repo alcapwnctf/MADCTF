@@ -7,7 +7,7 @@ TEAMNAMES = list()
 ROOTPASSWORD = ""
 CWD=""
 DBIP=""
-EXCLUDED = ["db","traefik","webapi","nginx","redis","postgres","flower","rabbitmq","initializer","gevent_flag_submitter","celery","celerybeat"]
+EXCLUDED = ["db","traefik","teampage","webapi","nginx","redis","postgres","flower","rabbitmq","initializer","gevent_flag_submitter","celery","celerybeat"]
 
 def genPassword(size=20):
     letters = string.ascii_letters+string.digits
@@ -31,7 +31,7 @@ def deleteAllUsers(dbName, teamList=TEAMNAMES):
     users=list()
 
     for userTuple in cursor:
-        user=userTuple[0].decode()
+        user=userTuple[0]
         users.append(user)
     
     for user in users:
@@ -56,11 +56,23 @@ def addAllUsers(name, teamList=TEAMNAMES):
         cursor.execute("CREATE DATABASE {}".format(team))
         cursor.execute("GRANT INSERT, SELECT, UPDATE ON {}.* TO '{}'@'%'".format(team,team))
         cursor.execute("USE {};".format(team))
-        cursor.execute("CREATE TABLE levels (id int(11) PRIMARY KEY AUTO_INCREMENT NOT NULL, level int(11) NOT NULL, question varchar(255) NOT NULL, answer varchar(800) NOT NULL, image varchar(255) NOT NULL, html varchar(255) DEFAULT NULL, description varchar(255) NOT NULL, hint varchar(800) NOT NULL);")
+        cursor.execute("CREATE TABLE flag (id int(11) PRIMARY KEY AUTO_INCREMENT NOT NULL, flag TEXT DEFAULT NULL, flagid TEXT DEFAULT NULL);")
+        cursor.execute("CREATE TABLE talking (id int(11) PRIMARY KEY AUTO_INCREMENT NOT NULL, username varchar(255) NOT NULL, query TEXT NOT NULL, filename TEXT NOT NULL, type varchar(255) NOT NULL);")
+
+        cursor.execute("CREATE TABLE trade_events (id int(11) PRIMARY KEY AUTO_INCREMENT NOT NULL, creation_time DATETIME DEFAULT CURRENT_TIMESTAMP, player_id int(11) NOT NULL, ticker varchar(255) NOT NULL, type varchar(255) NOT NULL, value FLOAT NOT NULL);")
+
+        cursor.execute("CREATE TABLE stonks (id int(11) PRIMARY KEY AUTO_INCREMENT NOT NULL, ticker varchar(255) NOT NULL UNIQUE, name TEXT NOT NULL, value FLOAT NOT NULL);")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("AAPL", "Apple Inc.", 300);""")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("GOOG", "Alphabet Inc.", 1300);""")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("TSLA", "Tesla Inc.", 700);""")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("MSFT", "Microsoft Corporation", 170);""")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("AMZN", "Amazon.com Inc.", 2400);""")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("JNJ", "Johnson & Johnson", 150);""")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("FB", "Facebook Inc.", 180);""")
+        cursor.execute("""INSERT INTO stonks (ticker, name, value) VALUES("JPM", "JPMorgan Chase & Co", 90);""")
+        
         cursor.execute("CREATE TABLE login (id int(255) NOT NULL PRIMARY KEY AUTO_INCREMENT, name varchar(255) NOT NULL, username varchar(255) NOT NULL, status varchar(255) NOT NULL, ip varchar(255) NOT NULL, time varchar(255) NOT NULL);")
-        cursor.execute("CREATE TABLE players (id int(255) NOT NULL PRIMARY KEY AUTO_INCREMENT, uid int(255) NOT NULL, name varchar(800) NOT NULL, username varchar(800) NOT NULL, password varchar(800) NOT NULL, email varchar(800) DEFAULT NULL, level int(255) NOT NULL, status int(255) NOT NULL, usertype int(255) NOT NULL, ip varchar(800) NOT NULL, time varchar(800) NOT NULL);")
-        cursor.execute("CREATE TABLE status (id int(255) NOT NULL PRIMARY KEY AUTO_INCREMENT, status int(255) NOT NULL);")
-        cursor.execute("CREATE TABLE submits (id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, name varchar(255) NOT NULL, username varchar(255) NOT NULL, answer varchar(255) NOT NULL, level varchar(255) NOT NULL, status varchar(255) NOT NULL, ip varchar(255) NOT NULL, time varchar(255) NOT NULL);")
+        cursor.execute("CREATE TABLE players (id int(255) NOT NULL PRIMARY KEY AUTO_INCREMENT, name varchar(800) NOT NULL, username varchar(800) NOT NULL, password varchar(800) NOT NULL, email varchar(800) DEFAULT NULL, money int NOT NULL, usertype int(255) NOT NULL, ip varchar(800) NOT NULL, creation_date DATETIME DEFAULT CURRENT_TIMESTAMP);")
         print("Added {}:{}".format(team,password))
         with open("{}/environ/{}.env".format(os.getcwd(),team),"w") as f:
             f.write('''DBUSER={}\nDBPASS={}\nDBHOST=db\nDBNAME={}\n'''.format(team,password,team))
@@ -73,11 +85,7 @@ def initDB():
 
 if __name__ == "__main__":
 
-    if len(sys.argv) < 2:
-        print("Usage {} docker-compose.yml".format(sys.argv[0]))
-        sys.exit(1)
-
-    yamlfile=yaml.load(open(sys.argv[1]), Loader=yaml.FullLoader)
+    yamlfile=yaml.load(open("docker-compose.yml"), Loader=yaml.FullLoader)
 
     ROOTPASSWORD=yamlfile['services']['db']['environment'][0].split("=")[1]
     dbCntrName=yamlfile['services']['db']['container_name']
@@ -101,13 +109,12 @@ if __name__ == "__main__":
     print("Waiting for database to be ready")
     while True:
         o, r = getOutput(["mysqladmin","ping","-h", DBIP, "--silent"])
-        time.sleep(5)
-        print(".", end="")
         if r==0:
             break
+        time.sleep(1)
     print("Database is ready")
     
     
     deleteAllUsers(dbCntrName)
     addAllUsers(dbCntrName)
-    # getOutput(["docker-compose", "up", "--detach", "--no-recreate", "--remove-orphans"])
+    getOutput(["docker-compose", "up", "--detach", "--remove-orphans"] + TEAMNAMES)

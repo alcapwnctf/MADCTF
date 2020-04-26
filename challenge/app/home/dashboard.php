@@ -1,7 +1,5 @@
 <?php  
-include("../scripts/player.php");
-require_once("../scripts/dbconnect.php");
-require_once("../scripts/stonks.php");
+require_once("../scripts/player.php");
 require_once('../scripts/auth.php'); 
 session_start();
 
@@ -9,21 +7,7 @@ if(!isset($_SESSION['username'])) {
 	header("Location: ../index.php?msg=2");
 }
 
-
-$username = $_SESSION['username'];
-$player = getPlayer($dbhandle, $username);
-
-if (isset($_GET["username"])) {
-  $reqUser = getPlayer($dbhandle, $_GET['username']);
-  if ($reqUser['username'] === $_GET['username']) {
-  $stonks = getPlayerStonks($dbhandle, $reqUser);
-  } else {
-      $msg = "User not found.";
-  }
-} else {
-  $msg = "No Username";
-}
-
+$player = getPlayer($dbhandle, $_SESSION['username']);
 ?>
 
 <!DOCTYPE html>
@@ -42,13 +26,14 @@ if (isset($_GET["username"])) {
 	<div class="collapse navbar-collapse" id="navbarNav">
 		<ul class="navbar-nav mr-auto">
 		<li class="nav-item">
-			<a class="nav-link" href="dashboard.php">Home</a>
+			<a class="nav-link active" href="dashboard.php">Home</a>
 		</li>
 		<li class="nav-item">
 			<a class="nav-link" href="stonks.php">Stonks</a>
 		</li>
+		
 		<li class="nav-item">
-			<a class="nav-link active" href="orders.php">Stonk Order</a>
+			<a class="nav-link" href="orders.php">Stonk Order</a>
 		</li>
 		<li class="nav-item">
 			<a class="nav-link" href="broker.php">Talk To stonkbronker?</a>
@@ -67,47 +52,38 @@ if (isset($_GET["username"])) {
 
 	<div class="container">
 		<div class="row">
-			<div class="mx-auto">
-				<h3>You wanna see your stonk?</h3>
+			<div class="mx-auto" id="chart">
+				<h1>BIEX provides the fairest stonk and honk.</h1>
 			</div>
 		</div>
-		<div class="row">
-			<div class="mx-auto">
-				<h6 id='stonkResult'></h6>
-			</div>
-		</div>
+	</div>
 
-		<div class="row">
-			<div class='mx-auto w-100'>
-				<table class="table">
-					<thead>
-						<tr>
-						<th scope="col">#</th>
-						<th scope="col">Ticker</th>
-						<th scope="col">Name</th>
-						<th scope="col">Shares</th>
-						<th scope="col">Value</th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php 
-							$counter = 1;
-							foreach($stonks as $key => $value) {
-                                $stonk = getStonk($dbhandle, $key);
-								echo "<tr>
-								<td scope='row'>" . $counter . "</td>";
-                                echo "<td>" . $key . "</td>";
-                                echo "<td>" . $stonk['name'] . "</td><td>" . $value . "</td>";
-                                echo "<td>" . $value*floatval($stonk['value']) . "</td>";
-								echo "</tr>";
-								$counter += 1;
-							}
-						?>
-					</tbody>
-				</table>
-			</div>
+	<div class='m-10'>
+		<!-- TradingView Widget BEGIN -->
+		<div class="tradingview-widget-container">
+		<div id="tradingview_0e4f5"></div>
+		<div class="tradingview-widget-copyright"><a href="https://in.tradingview.com/symbols/NASDAQ-AAPL/" rel="noopener" target="_blank"><span class="blue-text">AAPL Chart</span></a> by TradingView</div>
+		<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+		<script type="text/javascript">
+		new TradingView.widget(
+		{
+		"width": 980,
+		"height": 610,
+		"symbol": "NASDAQ:AAPL",
+		"interval": "D",
+		"timezone": "Etc/UTC",
+		"theme": "light",
+		"style": "1",
+		"locale": "in",
+		"toolbar_bg": "#f1f3f6",
+		"enable_publishing": false,
+		"allow_symbol_change": true,
+		"container_id": "tradingview_0e4f5"
+		}
+		);
+		</script>
 		</div>
-
+		<!-- TradingView Widget END -->
 	</div>
 </body>
 </html>

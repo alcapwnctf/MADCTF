@@ -11,3 +11,5 @@ front/node_modules
 control.py
 control_requirements.txt
 README.md
+
+__pycache__

@@ -1,86 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>DECODE 2020 | ONLINE LOCKDOWN HUNT</title>
-  <link rel="stylesheet" type="text/css" href="index.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+	<title>Best Investor's Exchange</title>
+	<!-- <link rel="stylesheet" type="text/css" href="index.css"> -->
+	<style>
+	input {
+		-webkit-appearance: none;
+		border-radius: 0;
+	}
+
+	button {
+		-webkit-appearance: none;
+		border-radius: 0;
+	}
+
+	input[type="text"], input[type="email"] {
+		border: none;
+		border-bottom: 2px solid rgba(136,136,136,0.6);
+		width: 300px;
+		outline: none;
+		font-size: 18px;
+		background: none;
+		padding: 15px;
+		padding-left: 0;
+		font-weight: 300;
+		transition: all .4s ease;
+	}
+
+	input[type="text"]:focus,input[type="password"]:focus, input[type="email"]:focus {
+		border-bottom: 2px solid rgba(136,136,136,1);
+		transition: all .4s ease;
+	}
+
+	input[type="password"] {
+		border: none;
+		border-bottom: 2px solid rgba(136,136,136,0.6);
+		width: 300px;
+		background: none;
+		outline: none;
+		font-size: 18px;
+		padding: 15px;
+		padding-left: 0;
+		font-weight: 300;
+		transition: all .4s ease;
+	}
+
+	label {
+		color: #222;
+		font-size: 18px;
+		margin-top: 20px;
+	}
+
+	</style>
+	<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
 </head>
 <body>
-  <div class="top">
-    <img src="logo.png" class="logo">
-    <div class="ham" onclick="fadeIn()">
-      <div class="hamlines" id="hamlines"></div>
-      <div class="hamlines" id="hamlines2"></div>
-      <div class="hamlines" id="hamlines3"></div>
-    </div>
-    <div class="container">
-    <a href="index.php">Home</a>
-			<a href="register.php">Register</a>
-      <a href="https://www.facebook.com/infinitycryptichunt">Hints</a>
-			<a href="rules.php">rules</a>
-			<a href="lead.php">leaderboard</a>
-			<a href="https://forms.gle/ArP2LVWQqo1WBweY6">contact</a>	
-    </div>
-  </div>
-  <center>
-  <div class="sidenav" id="sidenav">
-	<div class="little-space"></div>
-			<a href="index.php">Home</a>
-			<a href="register.php">Register</a>
-      <a href="https://www.facebook.com/infinitycryptichunt">Hints</a>
-			<a href="rules.php">rules</a>
-			<a href="lead.php">leaderboard</a>
-			<a href="https://forms.gle/ArP2LVWQqo1WBweY6">contact</a>	
-  </div>
-  <br><br>
-  <div class="message">
-    <?php 
-      $msgid = $_GET['msg'];
-      if (isset($msgid)){
-        if ($msgid == 1) {
-          echo "<p class='msg-right'>Account Created Successfully!</p>";
-        }
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<a class="navbar-brand" href="#">Best Investor's Exchange</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	<div class="collapse navbar-collapse" id="navbarNav">
+		<ul class="navbar-nav">
+		<li class="nav-item">
+			<a class="nav-link" href="index.php">Home</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link active" href="register.php">Register</a>
+		</li>
+		</ul>
+	</div>
+  </nav>
+  
+  <div class="container">
+		<div class='row'>
+			<div class='mx-auto'>
+				<p class='msg'>
+				<?php
+					$msgid = $_GET['msg'];
+					if (isset($msgid)){
+						if ($msgid == 1) {
+							echo "Account Created Successfully!";
+						}
+						if ($msgid == 2) {
+							echo "Error!";
+						}
 
-        elseif ($msgid == 2) {
-          echo "<p class='msg'>Error!</p>";
-        }
-
-      }
-      else {
-        // echo "";
-      }
-
-     ?>
-  </div>
-  <h1 class="heading">Register</h1>
-<form method="POST" action="scripts/register-action.php">
-  <input type="text" name="name" placeholder="Name" class="input" required><br><br>
-  <input type="email" name="email" placeholder="Email" class="input" required><br><br>
-  <input type="text" name="username" placeholder="Admission Number" class="input" required><br><br>
-  <input type="password" name="password" placeholder="Password" class="input" required><br><br>
-  <input type="submit" class="subBtn" name="submit" value="SUBMIT">
-</form>
-
-
-
-  <div onclick="fadeOut()" class="overlay" id="overlay"></div>
-
-  </center>
-  <script type="text/javascript">
-
-    function fadeIn(){
-        document.getElementById('sidenav').style.right = '0%'
-        document.getElementById('overlay').style.opacity = '0.7'
-        document.getElementById('overlay').style.zIndex = '1'
-    }
-
-       function fadeOut() {
-            document.getElementById('sidenav').style.right = '-300px'
-            document.getElementById('overlay').style.opacity = '0'
-        document.getElementById('overlay').style.zIndex = '-1'
-       }
-
-
-  </script>
+					}
+					else {
+						echo "";
+					}
+				?>
+				</p>
+			</div>
+		</div>
+		
+		<div class="row" >
+			<div class="mx-auto">
+				<div>
+					<h1>Register</h1>
+				</div>
+				<form method="POST" action="scripts/register-action.php">
+				<div class="form-group">
+					<label for="name">BIEX Your Name, good sire?</label>
+					<input type="text" class="form-control" id="name" name="name">
+				</div>
+				<div class="form-group">
+					<label for="username">BIEX Username</label>
+					<input type="text" class="form-control" id="username" name="username">
+				</div>
+				<div class="form-group">
+					<label for="password">BIEX Secret Code</label>
+					<input type="password" class="form-control" id="password" name="password">
+				</div>
+				<div class="form-group">
+					<label for="email">Email</label>
+					<input type="email" class="form-control" id="email" name="email">
+				</div>
+				<button type="submit" name="submit" class="btn btn-primary">Submit</button>
+				</form>
+			</div>
+		</div>
+	</div>
 </body>
 </html>

@@ -12,17 +12,7 @@ if(!isset($_SESSION['username'])) {
 
 $username = $_SESSION['username'];
 $player = getPlayer($dbhandle, $username);
-
-if (isset($_GET["username"])) {
-  $reqUser = getPlayer($dbhandle, $_GET['username']);
-  if ($reqUser['username'] === $_GET['username']) {
-  $stonks = getPlayerStonks($dbhandle, $reqUser);
-  } else {
-      $msg = "User not found.";
-  }
-} else {
-  $msg = "No Username";
-}
+$stonks = getStonkHistory($dbhandle, $player);
 
 ?>
 
@@ -84,21 +74,20 @@ if (isset($_GET["username"])) {
 						<tr>
 						<th scope="col">#</th>
 						<th scope="col">Ticker</th>
-						<th scope="col">Name</th>
 						<th scope="col">Shares</th>
-						<th scope="col">Value</th>
+						<th scope="col">Type</th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php 
 							$counter = 1;
-							foreach($stonks as $key => $value) {
-                                $stonk = getStonk($dbhandle, $key);
+
+							foreach($stonks as $stonk) {
 								echo "<tr>
 								<td scope='row'>" . $counter . "</td>";
-                                echo "<td>" . $key . "</td>";
-                                echo "<td>" . $stonk['name'] . "</td><td>" . $value . "</td>";
-                                echo "<td>" . $value*floatval($stonk['value']) . "</td>";
+								foreach($stonk as $key => $value) {
+									echo "<td>" . $value . "</td>";
+								}
 								echo "</tr>";
 								$counter += 1;
 							}
@@ -107,7 +96,6 @@ if (isset($_GET["username"])) {
 				</table>
 			</div>
 		</div>
-
 	</div>
 </body>
 </html>

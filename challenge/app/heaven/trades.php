@@ -1,31 +1,37 @@
-<?php  
-include("../scripts/player.php");
+<?php 
+require_once('../scripts/admin_auth.php');
+require_once('../scripts/player.php');
+require_once('../scripts/stonks.php');
 require_once("../scripts/dbconnect.php");
-require_once("../scripts/stonks.php");
-require_once('../scripts/auth.php'); 
-session_start();
-
-if(!isset($_SESSION['username'])) {
-	header("Location: ../index.php?msg=2");
-}
-
 
 $username = $_SESSION['username'];
 $player = getPlayer($dbhandle, $username);
 
-if (isset($_GET["username"])) {
-  $reqUser = getPlayer($dbhandle, $_GET['username']);
-  if ($reqUser['username'] === $_GET['username']) {
-  $stonks = getPlayerStonks($dbhandle, $reqUser);
-  } else {
-      $msg = "User not found.";
+if (isset($_POST['download_stmt'])) {
+    $reqUser = getPlayer($dbhandle, $_POST['username']);
+    if ($reqUser['username'] === $_GET['username']) {
+      $serializedStonks = getSerializedPlayerStonks($dbhandle, $reqUser);
+      header('Content-Disposition: attachment; filename="statement.biex"');
+      header("Content-type: text/plain");
+      print $serializedStonks;
+      die();
+    } else {
+      $msg = "Invalid username.";
+    }
   }
+
+if (isset($_GET["username"])) {
+    $reqUser = getPlayer($dbhandle, $_GET['username']);
+    if ($reqUser['username'] === $_GET['username']) {
+		$stonks = getStonkHistory($dbhandle, $reqUser);
+    } else {
+        $msg = "User not found.";
+    }
 } else {
-  $msg = "No Username";
+    $msg = "No Username";
 }
 
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -42,21 +48,7 @@ if (isset($_GET["username"])) {
 	<div class="collapse navbar-collapse" id="navbarNav">
 		<ul class="navbar-nav mr-auto">
 		<li class="nav-item">
-			<a class="nav-link" href="dashboard.php">Home</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link" href="stonks.php">Stonks</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link active" href="orders.php">Stonk Order</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link" href="broker.php">Talk To stonkbronker?</a>
-		<li class="nav-item">
-			<a class="nav-link" href="https://www.reddit.com/r/wallstreetbets">Gambler's Den</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link" href="https://brrr.money/">Haha money go brrr</a>
+			<a class="nav-link" href="index.php">Home</a>
 		</li>
 		</ul>
 		<span class="navbar-text">
@@ -66,15 +58,20 @@ if (isset($_GET["username"])) {
 	</nav>
 
 	<div class="container">
-		<div class="row">
-			<div class="mx-auto">
-				<h3>You wanna see your stonk?</h3>
+		<div class='row'>
+			<div class='mx-auto'>
+				<?php
+					if (isset($msg)){
+						echo "<p class='msg bg-warning p-3'>". $msg . "</p>";
+					}
+				?>
 			</div>
+
 		</div>
-		<div class="row">
-			<div class="mx-auto">
-				<h6 id='stonkResult'></h6>
-			</div>
+
+		<div class='row mt-3'>
+				<div class='mx-auto w-50'>
+				</div>
 		</div>
 
 		<div class="row">
@@ -84,21 +81,20 @@ if (isset($_GET["username"])) {
 						<tr>
 						<th scope="col">#</th>
 						<th scope="col">Ticker</th>
-						<th scope="col">Name</th>
 						<th scope="col">Shares</th>
-						<th scope="col">Value</th>
+						<th scope="col">Type</th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php 
 							$counter = 1;
-							foreach($stonks as $key => $value) {
-                                $stonk = getStonk($dbhandle, $key);
+
+							foreach($stonks as $stonk) {
 								echo "<tr>
 								<td scope='row'>" . $counter . "</td>";
-                                echo "<td>" . $key . "</td>";
-                                echo "<td>" . $stonk['name'] . "</td><td>" . $value . "</td>";
-                                echo "<td>" . $value*floatval($stonk['value']) . "</td>";
+								foreach($stonk as $key => $value) {
+									echo "<td>" . $value . "</td>";
+								}
 								echo "</tr>";
 								$counter += 1;
 							}
@@ -107,7 +103,15 @@ if (isset($_GET["username"])) {
 				</table>
 			</div>
 		</div>
-
+    <div class='row'>
+        <div class='col'>
+            <form method='POST'>
+        <input hidden name='username' value='<?php echo $reqUser['username']; ?>'>
+                <button type='submit' name='download_stmt' class='btn btn-primary'>Download Statement</button>
+            </form>
+        </div>
+    </div>
 	</div>
+
 </body>
 </html>

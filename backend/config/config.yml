@@ -1,24 +1,24 @@
 global:
   timezone: Asia/Kolkata
   checkers_path: /checkers/
-  default_score: 500
+  default_score: 1000
   env_path: /checkers/bin/
   flag_lifetime: 5
-  game_hardness: 2000.0
+  game_hardness: 500.0
   inflation: true
-  round_time: 120
+  round_time: 60
   start_time: 2020-04-25 21:00:00
   game_mode: classic
 
 flower:
-  username: gameserver
-  password: MySuperS3cretFl0werP@ssword
+  username: flower
+  password: flower
 
 storages:
   db:
     dbname: gameserver
     host: postgres
-    password: MySuperSecretP0stgresDB
+    password: gameserver
     port: 5432
     user: gameserver
 
@@ -26,54 +26,79 @@ storages:
     db: 0
     host: redis
     port: 6379
-    password: EpicRedisSecretPass
+    password: redis
 
   rabbitmq:
     host: rabbitmq
     port: 5672
     vhost: forcad
-    user: gameserver
-    password: EpicGameRabbitMQP@Ss
+    user: rabbitmq
+    password: rabbitmq
   
 tasks:
-  - checker: adminpass/checker.py
-    checker_timeout: 10
-    checker_type: hackerdom
+  - name: hftSecretSause
+    checker: hftsecretsause/checker.py
+    checker_timeout: 15
+    checker_type: nfr
     gets: 1
-    name: adminpass
     places: 1
     puts: 1
 
-  - checker: userpass/gevent_checker.py
-    checker_timeout: 10
-    checker_type: hackerdom
+  - name: darkPool
+    checker: darkpool/checker.py
+    checker_timeout: 15
+    checker_type: nfr
     gets: 1
-    name: userpass
     places: 1
     puts: 1
 
-  - checker: dbaccess/gevent_checker.py
+  - name: valueInvestor
+    checker: valueinvestor/checker.py
     checker_timeout: 10
-    checker_type: hackerdom
+    checker_type: nfr
     gets: 1
-    name: dbaccess
     places: 1
     puts: 1
-  
-  - checker: etcshadow/gevent_checker.py
+
+  - name: biexStonker
+    checker: biexstonker/checker.py
     checker_timeout: 10
-    checker_type: hackerdom
+    checker_type: nfr
     gets: 1
-    name: etcshadow
     places: 1
     puts: 1
-  
+
+  - name: recession20
+    checker: recession20/checker.py
+    checker_timeout: 10
+    checker_type: nfr
+    gets: 1
+    places: 1
+    puts: 1
+
+  - name: imf
+    checker: imf/checker.py
+    checker_timeout: 15
+    checker_type: nfr
+    gets: 1
+    places: 3
+    puts: 1
+
+  - name: goldman
+    checker: goldman/checker.py
+    checker_timeout: 15
+    checker_type: nfr
+    gets: 1
+    places: 1
+    puts: 1
+
+
 teams:
-  - ip: 172.19.10.3
-    name: "Test_Team_1"
+  - ip: 172.19.10.11
+    name: "Team1"
 
-  - ip: 172.19.10.4
-    name: "Test_Team_2"
+  - ip: 172.19.10.12
+    name: "Team2"
 
-  - ip: 172.19.10.5
-    name: "Test_Team_3"
+  - ip: 172.19.10.13
+    name: "Team3"

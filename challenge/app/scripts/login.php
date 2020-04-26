@@ -48,7 +48,7 @@ else {
 	// echo "error " . mysqli_error();
 }
 if ($usertype == 1) {
-header("Location: ../home/play.php");
+header("Location: ../home/dashboard.php");
 	// echo "success";
 }
 elseif ($usertype == 2) {

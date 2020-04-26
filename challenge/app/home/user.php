@@ -3,26 +3,28 @@ include("../scripts/player.php");
 require_once("../scripts/dbconnect.php");
 require_once("../scripts/stonks.php");
 require_once('../scripts/auth.php'); 
-session_start();
 
 if(!isset($_SESSION['username'])) {
 	header("Location: ../index.php?msg=2");
 }
 
-
 $username = $_SESSION['username'];
 $player = getPlayer($dbhandle, $username);
-
-if (isset($_GET["username"])) {
-  $reqUser = getPlayer($dbhandle, $_GET['username']);
-  if ($reqUser['username'] === $_GET['username']) {
-  $stonks = getPlayerStonks($dbhandle, $reqUser);
-  } else {
-      $msg = "User not found.";
-  }
-} else {
-  $msg = "No Username";
+if (isset($_POST['download_stmt'])) {
+	$serializedStonks = getSerializedPlayerStonks($dbhandle, $player);
+	header('Content-Disposition: attachment; filename="statement.biex"');
+	header("Content-type: text/plain");
+	print $serializedStonks;
+	die();
 }
+
+if (isset($_POST['upload_stmt'])) {
+	$uploadData = file_get_contents($_FILES['file']['tmp_name']); 
+	$stonks = unserializePlayerStonks($uploadData);
+} else {
+	$stonks = getPlayerStonks($dbhandle, $player);
+}
+
 
 ?>
 
@@ -108,6 +110,21 @@ if (isset($_GET["username"])) {
 			</div>
 		</div>
 
+		<div class='row'>
+			<div class='col'>
+				<form method='POST'>
+					<button type='submit' name='download_stmt' class='btn btn-primary'>Download Statement</button>
+				</form>
+			</div>
+			<div class='col'>
+				<form method='POST' enctype="multipart/form-data">
+					<div class='form-group'>
+						<input type='file' class='form-control-file' name='file'>
+					</div>
+					<button type='submit' name='upload_stmt' class='btn btn-primary'>Upload Statement</button>
+				</form>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

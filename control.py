@@ -182,8 +182,7 @@ def start_game(args):
     command = [
         'docker-compose', '-f',
         DOCKER_COMPOSE_FILE,
-        '--no-recreate',
-        'up', '--build', '-d',
+        'up', '--build', '--no-recreate', '-d',
         '--scale', f'celery={args.instances}',
     ]
     run_command(command, cwd=BASE_DIR)

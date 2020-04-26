@@ -1,39 +1,39 @@
 version: '2.4'
 
-volumes:
-  front_build:
+networks:
+  game:
+    ipam: 
+      config:
+        - subnet: 172.19.10.0/26
 
 services:
-  traefik:
-    image: traefik:v2.2
-    restart: always
-    command: 
-      - --log.level=INFO
-      - --accesslog=true
-      - --entrypoints.web.address=:80
-      - --entrypoints.ssh.address=:22
-      - --api
-      - --providers.docker=true
-      - --providers.docker.exposedByDefault=false
-      - --providers.docker.network=game
-    ports: 
-      - "80:80"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
+
+  gevent_flag_submitter:
+    build:
+      context: .
+      dockerfile: ./docker_config/gevent_flag_submitter/Dockerfile
+    env_file:
+      - ./environ/postgres.env
+      - ./environ/redis.env
+      - ./environ/rabbitmq.env
+    restart: on-failure
+    networks: 
       - game
-      
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.entrypoints=web"
-      - "traefik.http.routers.traefik.rule=Host(`localhost`)"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=traefikauth"
-      - "traefik.http.middlewares.traefikauth.basicauth.users=iamalsaher:$$apr1$$s44w6az3$$MHqQbT2UeKraJw92X1WTK1"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker_config/nginx/Dockerfile
+    restart: on-failure
+    depends_on:
+        - flower
+        - webapi
+    networks: 
+      - game
 
   webapi:
     build:
-      context: .
+      context: ./
       dockerfile: ./docker_config/webapi/Dockerfile
     env_file:
       - ./environ/postgres.env
@@ -42,17 +42,11 @@ services:
     restart: on-failure
     tty: true
     networks: 
-      - game
-
-  nginx:
-    build:
-      context: .
-      dockerfile: ./docker_config/nginx/Dockerfile
-    volumes:
-      - front_build:/front_build
-    restart: on-failure
-    networks: 
-      - game
+      - gameserver
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
 
   redis:
     image: redis:5.0.7-alpine
@@ -63,17 +57,19 @@ services:
     env_file:
       - ./environ/redis.env
     networks: 
-      - game
+      - gameserver
+    depends_on:
+      - postgres
     
   postgres:
     image: pomomondreganto/forcad_postgres:latest
-    # volumes:
-      # - ./data/:/var/lib/postgresql/data/
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data/
     env_file:
       - ./environ/postgres.env
     restart: on-failure
     networks: 
-      - game
+      - gameserver
     
   flower:
     build:
@@ -88,7 +84,12 @@ services:
       - ./environ/rabbitmq.env
     restart: on-failure
     networks: 
-      - game
+      - gameserver
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+      - celery
 
   rabbitmq:
     hostname: rabbitmq
@@ -97,7 +98,9 @@ services:
     env_file:
       - ./environ/rabbitmq.env
     networks: 
-      - game
+      - gameserver
+    depends_on:
+      - postgres
   
   initializer:
     build:
@@ -109,19 +112,11 @@ services:
       - ./environ/rabbitmq.env
     restart: on-failure
     networks: 
-      - game
-
-  gevent_flag_submitter:
-    build:
-      context: .
-      dockerfile: ./docker_config/gevent_flag_submitter/Dockerfile
-    env_file:
-      - ./environ/postgres.env
-      - ./environ/redis.env
-      - ./environ/rabbitmq.env
-    restart: on-failure
-    networks: 
-      - game
+      - gameserver
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
 
   celery:
     build:
@@ -129,8 +124,6 @@ services:
       dockerfile: ./docker_config/celery/Dockerfile
     environment:
       - CELERY_CONTAINER_TYPE=worker
-    volumes:
-      - ./checkers/:/checkers/
     env_file:
       - ./environ/postgres.env
       - ./environ/redis.env
@@ -138,6 +131,10 @@ services:
     restart: on-failure
     networks: 
       - game
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
 
   celerybeat:
     build:
@@ -151,15 +148,19 @@ services:
       - ./environ/rabbitmq.env
     restart: on-failure
     networks: 
-      - game
+      - gameserver
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
 
   db:
     image: mariadb:10.4
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=MyVeryEpicMysqlR00tp@ssword
-    # volumes:
-    #   - ./data/mysql:/var/lib/mysql
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    volumes:
+      - ./data/mysql:/var/lib/mysql
     container_name: teamdb
     networks:
       game:
@@ -167,53 +168,41 @@ services:
     command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --wait_timeout=28800, --log-warnings=0]
 
   team1:
-    image: trafex/alpine-nginx-php7
-    # build: .
+    image: madctf_challenge
+    build:
+      context: ./challenge
     networks: 
       game:
         ipv4_address: 172.19.10.11
     depends_on:
       - db
-    volumes: 
-      - ./challenge/app/:/var/www/html
-    mem_limit: 200m
+    mem_limit: 768m
     mem_reservation: 50m
     env_file: 
       - ./environ/team1.env
- 
+
   team2:
-    image: trafex/alpine-nginx-php7
-    # build: .
+    image: madctf_challenge
     networks: 
       game:
         ipv4_address: 172.19.10.12
     depends_on:
       - db
-    volumes: 
-      - ./challenge/app/:/var/www/html
+      - team1
     mem_limit: 200m
     mem_reservation: 50m
     env_file: 
       - ./environ/team2.env
- 
+
   team3:
-    image: trafex/alpine-nginx-php7
-    # build: .
+    image: madctf_challenge
     networks: 
       game:
         ipv4_address: 172.19.10.13
     depends_on:
       - db
-    volumes: 
-      - ./challenge/app/:/var/www/html
+      - team1
     mem_limit: 200m
     mem_reservation: 50m
     env_file: 
       - ./environ/team3.env
-
-
-networks:
-  game:
-    ipam: 
-      config:
-        - subnet: 172.19.10.0/26
